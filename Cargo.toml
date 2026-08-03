@@ -2,6 +2,7 @@
 name = "aoc-rs"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.97"
 
 [dependencies]
 bitvec = "1.0.1"
@@ -16,7 +17,7 @@ name = "day8_bench"
 harness = false
 
 [profile.release]
-debug = "line-tables-only"
+# debug = "line-tables-only"
 opt-level = 3
 panic = "abort"
 lto = "fat"

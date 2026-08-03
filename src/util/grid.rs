@@ -93,6 +93,19 @@ impl<T: Copy + PartialEq + Debug> Grid<T> {
             .collect() // Collects into Vec<Point>
     }
 
+    pub fn find_all_iter(&self, element: T) -> impl Iterator<Item = Point> + '_ {
+        self.data.iter().enumerate().filter_map(move |(idx, e)| {
+            if *e == element {
+                // Calculate point for a match
+                let x = (idx as i32) % self.width;
+                let y = (idx as i32) / self.width;
+                Some(Point::new(x, y)) // Return Some(Point)
+            } else {
+                None // Return None to discard non-matches
+            }
+        })
+    }
+
     // #[inline(never)]
     pub fn get(&self, point: Point) -> Option<&T> {
         if point.x >= self.width || point.y >= self.height || point.x < 0 || point.y < 0 {
