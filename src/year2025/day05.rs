@@ -32,6 +32,7 @@ pub fn parse(input: &str) -> Input {
             curr_merged = next_range;
         }
     }
+
     merged_ranges.push(curr_merged);
     let ranges = merged_ranges;
 

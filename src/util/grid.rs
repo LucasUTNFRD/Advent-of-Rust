@@ -65,6 +65,23 @@ impl Grid<u8> {
         s.data.iter_mut().for_each(|b| *b = symbol);
         s
     }
+
+    pub fn find_all_ascii(&self) -> Vec<Point> {
+        self.data
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, e)| {
+                if e.is_ascii_alphabetic() {
+                    // Calculate point for a match
+                    let x = (idx as i32) % self.width;
+                    let y = (idx as i32) / self.width;
+                    Some(Point::new(x, y)) // Return Some(Point)
+                } else {
+                    None // Return None to discard non-matches
+                }
+            })
+            .collect() // Collects into Vec<Point>
+    }
 }
 
 impl<T: Copy + PartialEq + Debug> Grid<T> {
