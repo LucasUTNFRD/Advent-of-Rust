@@ -51,8 +51,8 @@ pub fn parse(input: &str) -> Input {
         });
     });
 
-    let part_1 = antinodes_1.data.iter().filter(|b| **b == 1).count();
-    let part_2 = antinodes_2.data.iter().filter(|b| **b == 1).count();
+    let part_1 = antinodes_1.data.iter().map(|b| *b as usize).sum();
+    let part_2 = antinodes_2.data.iter().map(|b| *b as usize).sum();
     (part_1, part_2)
 }
 
