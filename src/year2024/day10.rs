@@ -4,6 +4,7 @@ use crate::util::{
     grid::Grid,
     point::{EAST, NORTH, Point, SOUTH, WEST},
 };
+use rustc_hash::FxHashSet;
 
 type Input = Grid<u8>;
 
@@ -19,27 +20,35 @@ pub fn part_1(input: &Input) -> usize {
         .sum()
 }
 
-fn get_trail_score(grid: &Input, curr_point: Point) -> usize {
-    let curr = grid[curr_point];
+fn get_trail_score(grid: &Input, start: Point) -> usize {
+    let mut stack = Vec::with_capacity(grid.data.len());
+    stack.push(start);
 
-    if curr == b'9' {
-        return 1;
-    }
+    let mut visited = grid.copy_maze_with(false as u8);
+    visited[start] = true as u8;
 
-    let mut total_paths = 0;
+    let mut trailhead_visited = FxHashSet::default();
 
-    for dir in [NORTH, SOUTH, WEST, EAST] {
-        let new_dir = dir + curr_point;
+    while let Some(point) = stack.pop() {
+        let curr_height = grid[point];
 
-        if let Some(val) = grid.get(new_dir)
-            && *val == curr + 1
-        {
-            total_paths += get_trail_score(grid, new_dir)
+        if curr_height == b'9' {
+            trailhead_visited.insert(point);
+            continue;
+        }
+
+        for dir in [EAST, NORTH, SOUTH, WEST] {
+            let next_point = point + dir;
+            if let Some(&next_height) = grid.get(next_point)
+                && next_height == curr_height + 1
+                && visited[next_point] == false as u8
+            {
+                stack.push(next_point);
+            }
         }
     }
 
-    dbg!(total_paths);
-    total_paths
+    trailhead_visited.len()
 }
 
 pub fn part_2(input: &Input) -> usize {
@@ -62,7 +71,7 @@ mod tests {
     #[test]
     fn test_part_1() {
         let input = parse(EXAMPLE);
-        assert_eq!(part_1(&input), 5);
+        assert_eq!(part_1(&input), 36);
     }
 
     #[test]
