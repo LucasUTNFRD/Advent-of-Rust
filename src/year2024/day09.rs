@@ -70,47 +70,53 @@ pub fn part_1(input: &Input) -> usize {
 }
 
 pub fn part_2(input: &Input) -> usize {
-    let mut disk_map = input.clone();
-    let n = disk_map.len();
+    struct File {
+        file_id: usize,
+        pos: usize,
+        size: usize,
+    }
 
-    let mut pos = 0;
+    let mut file = Vec::with_capacity(input.len());
+    let mut free_heaps: [BinaryHeap<Reverse<usize>>; 10] = Default::default();
+    let mut curr_pos = 0;
+    for (id, &(block_size, free_size)) in input.iter().enumerate() {
+        file.push(File {
+            file_id: id,
+            pos: curr_pos,
+            size: block_size as usize,
+        });
 
-    let mut free_list: Vec<BinaryHeap<Reverse<usize>>> = (1..=9)
-        .map(|free_size| {
-            let mut heap: BinaryHeap<Reverse<usize>> = BinaryHeap::new();
-            for (i, (_, free)) in disk_map.iter().enumerate() {
-                if *free == free_size {
-                    heap.push(Reverse(i));
-                }
-            }
-            heap
-        })
-        .collect();
+        curr_pos += block_size as usize;
 
-    let (start, end) = (0usize, disk_map.len() - 1);
-
-    for idx in (0..n).rev() {
-        let (file_len, _) = disk_map[idx];
-        // where i can find enough blocks left most
-        if file_len == 0 {
-            continue;
-        }
-
-        let Some((size, span_pos)) = (file_len..=9)
-            .filter_map(|size| free_list[size as usize].peek().map(|&Reverse(p)| (size, p)))
-            .min_by_key(|&(_, p)| p)
-        else {
-            continue;
-        };
-
-        free_list[size as usize - 1].pop();
-        let left_over = size - file_len;
-        if left_over > 0 {
-            free_list[left_over as usize - 1].push(Reverse(span_pos + file_len as usize));
+        if free_size > 0 && free_size < 10 {
+            free_heaps[free_size as usize].push(Reverse(curr_pos));
+            curr_pos += free_size as usize;
         }
     }
 
-    todo!()
+    file.iter_mut().rev().for_each(|f| {
+        let target = (f.size..=9)
+            .filter_map(|size| free_heaps[size].peek().map(|&Reverse(pos)| (size, pos)))
+            .filter(|&(_, pos)| pos < f.pos)
+            .min_by_key(|&(_, pos)| pos);
+
+        if let Some((best_size, best_pos)) = target {
+            free_heaps[best_size].pop();
+            f.pos = best_pos;
+
+            let remaining_size = best_size - f.size;
+            if remaining_size > 0 {
+                free_heaps[remaining_size].push(Reverse(best_pos + f.size));
+            }
+        }
+    });
+
+    file.iter().fold(0usize, |checksum, f| {
+        let s = f.size;
+        let p = f.pos;
+        let i = f.file_id;
+        checksum + i * (s * p + (s * (s - 1)) / 2)
+    })
 }
 
 #[cfg(test)]
@@ -129,6 +135,6 @@ mod tests {
     #[test]
     fn test_part_2() {
         let input = parse(EXAMPLE);
-        assert_eq!(part_2(&input), 0);
+        assert_eq!(part_2(&input), 2858);
     }
 }

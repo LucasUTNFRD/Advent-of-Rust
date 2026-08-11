@@ -3,7 +3,7 @@ lint:
     cargo clippy --all-targets --all-features
 
 flamegraph:
-    cargo flamegraph --release && brave "flamegraph.svg"
+    cargo flamegraph --release --bin aoc && brave "flamegraph.svg"
 
 run:
     cargo run --bin aoc
